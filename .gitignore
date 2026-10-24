@@ -1,0 +1,24 @@
+# C build artifacts
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+*.exe
+*.out
+/todo
+/output/
+
+# Text files and generated reports
+*.txt
+/report.html
+
+# Keep the fictional demo dataset versioned while ignoring runtime data
+!/sample-data/tasks.txt
+!/sample-data/habits.txt
+!/sample-data/habit_log.txt
+
+# OS files
+.DS_Store
