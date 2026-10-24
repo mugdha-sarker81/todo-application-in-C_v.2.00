@@ -1,6 +1,0 @@
-1|Drink a glass of water|07:00
-2|Stretch or take a morning walk|07:15
-3|Read for 20 minutes|20:30
-4|Plan tomorrow's priorities|20:45
-5|Write a short daily journal|21:00
-6|Practice a language for 15 minutes|21:15
