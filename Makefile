@@ -10,9 +10,9 @@ TARGET = todo
 RUN = ./$(TARGET)
 endif
 
-SOURCES = main.c tasks.c habits.c calendar.c export.c team.c
+SOURCES = main.c tasks.c habits.c calendar.c export.c team.c team_auth.c
 OBJECTS = $(SOURCES:.c=.o)
-HEADERS = tasks.h habits.h calendar.h export.h team.h
+HEADERS = tasks.h habits.h calendar.h export.h team.h team_auth.h
 
 .PHONY: all run clean
 

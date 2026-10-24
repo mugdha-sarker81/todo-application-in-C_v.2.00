@@ -3,6 +3,7 @@
 void clearScreen();
 void clearInputBuffer();
 void dashboard();
+void home(void);
 
 Habit habits[MAX_HABITS];
 HabitLog logs[MAX_LOGS];

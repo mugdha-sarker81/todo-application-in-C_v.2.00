@@ -3,7 +3,9 @@
 #include <time.h>
 #include <string.h>
 #include "team.h"
+#include "team_auth.h"
 
+void clearInputBuffer(void);
 void clearScreen(void);
 
 #define MAX_PROJECTS 15
@@ -30,10 +32,6 @@ Project projects[MAX_PROJECTS];
 Commit commits[MAX_COMMITS];
 int project_count = 0, commit_count = 0;
 
-void ClearInputBuffer(){
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF) {}
-}
 
 void load_projects(void) {
     FILE *file = fopen("team_project_name.txt", "r");
@@ -104,12 +102,13 @@ void save_projects(void) {
 }
 
 int create_project(char username[]) {
-    Project *p = &projects[project_count];
+    Project *p;
 
     if (project_count >= MAX_PROJECTS) {
         printf("Project list is full.\n");
         return -2;
     }
+    p = &projects[project_count];
     printf("Enter new project name: ");
     if (fgets(p->name, NAME_SIZE, stdin) == NULL) return -1;
     p->name[strcspn(p->name, "\n")] = 0;
@@ -118,8 +117,21 @@ int create_project(char username[]) {
         printf("Name cannot be empty or contain '|'.\n");
         return -2;
     }
-    
-    strcpy(p->members, username);  project_count++;
+
+    for (int candidate = 1; candidate <= MAX_PROJECTS; candidate++) {
+        int id_exists = 0;
+        snprintf(p->id, sizeof(p->id), "p%d", candidate);
+        for (int i = 0; i < project_count; i++) {
+            if (strcmp(projects[i].id, p->id) == 0) {
+                id_exists = 1;
+                break;
+            }
+        }
+        if (!id_exists) break;
+    }
+
+    strcpy(p->members, username);
+    project_count++;
     save_projects();
     printf("Project created!\n");
     return project_count - 1;
@@ -131,7 +143,7 @@ int choose_project(char username[]) {
     show_projects(username, available, &count);
     printf("0. Create new project\nChoose a project: ");
     if (scanf("%d", &choice) != 1) return -1;
-    ClearInputBuffer();
+    clearInputBuffer();
     if (choice == 0) return create_project(username);
     if (choice < 1 || choice > count) {
         printf("Invalid project number.\n");
@@ -204,7 +216,7 @@ void delete_commit(int project_index) {
     }
     printf("Enter message number to delete: ");
     if (scanf("%d", &selected) != 1) return;
-    ClearInputBuffer();
+    clearInputBuffer();
     if (selected < 1 || selected > number) {
         printf("Invalid message number.\n");
         return;
@@ -225,7 +237,7 @@ void add_collaborator(int project_index) {
     Project *p = &projects[project_index];
     printf("Enter collaborator username to add: ");
     if (fgets(line, sizeof(line), stdin) == NULL) return;
-    if (strchr(line, '\n') == NULL) ClearInputBuffer();
+    if (strchr(line, '\n') == NULL) clearInputBuffer();
     line[strcspn(line, "\n")] = 0;
     if (line[0] == '\0' || strlen(line) >= USER_SIZE) {
         printf("Invalid name. Try again.\n");
@@ -255,14 +267,27 @@ void teamDashboard() {
     load_projects();
     load_commits();
 
-    printf("Team Project Progress Tracker\nEnter username: ");
-    if (fgets(username, sizeof(username), stdin) == NULL) return;
-    username[strcspn(username, "\n")] = 0;
-    if (username[0] == '\0') {
-        printf("Username cannot be empty.\n");
-        return;
+    while (1) {
+        printf("\nTeam Project Progress Tracker\n");
+        printf("1. Login\n");
+        printf("2. Register\n");
+        printf("0. Back\n");
+        printf("Choose: ");
+
+        if (scanf("%d", &choice) != 1) {
+            clearInputBuffer();
+            printf("Invalid choice. Enter 1, 2, or 0.\n");
+            continue;
+        }
+        clearInputBuffer();
+
+        if (choice == 0) return;
+        if (choice == 2 && register_user(username, sizeof(username))) break;
+        if (choice == 1 && login_user(username, sizeof(username))) break;
+        if (choice != 1 && choice != 2)
+            printf("Invalid choice. Enter 1, 2, or 0.\n");
     }
-    clearScreen();
+
     while ((project_index = choose_project(username)) != -1)
         while (project_index >= 0) {
             show_history(project_index);
@@ -275,11 +300,11 @@ void teamDashboard() {
             printf("Choose option: ");
 
             if(scanf("%d", &choice) != 1) {
-                ClearInputBuffer();
+                clearInputBuffer();
                 printf("Invalid option.\n");
                 continue;
             }
-            ClearInputBuffer();
+            clearInputBuffer();
 
             if (choice == 1) add_commit(project_index, username);
             else if (choice == 2) delete_commit(project_index);

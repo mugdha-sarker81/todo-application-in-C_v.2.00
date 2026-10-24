@@ -1,515 +1,305 @@
 # Task Manager, Habit Tracker & Team Work
 
-A feature-rich C application for managing daily tasks, tracking habits, coordinating team projects, reviewing progress, and planning work visually. Its home menu keeps task management, habit tracking, and team work in separate dashboards.
+A terminal-based productivity application written in C. Manage dated tasks, track daily habits and streaks, and organize project progress with a simple team dashboard. Data is saved locally in text files in the directory where the program is run.
 
-This project is designed as a practical C programming exercise and also works as a real personal productivity tool for daily planning.
+> This is a local, educational productivity program. Team accounts and project records are stored on the same computer; the application does not provide a network service or synchronize data between users or devices.
 
----
+## Contents
 
-## Overview
+- [Features](#features)
+- [Requirements](#requirements)
+- [Build](#build)
+- [Run](#run)
+- [Using the application](#using-the-application)
+- [Command-line reference](#command-line-reference)
+- [Data storage and formats](#data-storage-and-formats)
+- [Project layout](#project-layout)
+- [Implementation notes and limits](#implementation-notes-and-limits)
+- [Troubleshooting](#troubleshooting)
+- [Privacy and security](#privacy-and-security)
+- [License](#license)
 
-The application provides:
+## Features
 
-- Task creation with date and priority
-- Search and filtering by date
-- Pending-task viewing
-- Marking tasks as completed
-- Task deletion
-- Habit tracking with daily completion logs
-- Team project progress messages and collaborators
-- Streak calculation and performance statistics
-- Calendar visualization with color-coded priority levels
-- HTML export for quick reporting and sharing
-- Persistent storage through text files
-- Command-line options for quick access and automation
+### Task manager
 
-It is built as a multi-file C project using modular code, dynamic memory, structured data, and file-based persistence.
+- Add tasks with a due date, title, and priority (`High`, `Medium`, or `Low`).
+- Assign each task an automatically generated numeric ID and the initial `Pending` status.
+- View pending tasks, search tasks by date, mark a task as done, or delete a task.
+- Keep tasks ordered by date and then by ID when the application saves them.
+- View a month at a glance, with pending task dates colored by their highest priority:
+  - **Red:** High
+  - **Yellow:** Medium
+  - **Green:** Low
 
----
+Task dates are entered as `DD-MM-YYYY`. The current validator checks the format and basic ranges (month 1–12 and day 1–31); it does not reject every impossible calendar date, such as 31 February.
 
-## Main Features
+### Habit tracker
 
-### 1. Task Management
+- Add a habit with a name and scheduled time in `HH:MM` 24-hour format.
+- Show today's habits and mark each habit done or not done for today.
+- Delete a habit.
+- Review today's completion percentage, a current streak, and the last seven days of completion rates.
+- Identify habits with a completion rate below 40% over that seven-day period.
 
-The core of the app is the task manager.
+A day counts toward the current streak when at least 80% of the current habits are marked complete. The application supports up to 10 habits and stores up to 5,000 completion log entries.
 
-- Add a task with:
-  - date in `DD-MM-YYYY` format
-  - title
-  - priority: `High`, `Medium`, or `Low`
-  - automatic status: `Pending`
-- Each task receives a unique numeric ID automatically.
-- Tasks are stored in memory and saved permanently in `tasks.txt`.
-- Tasks can be listed in pending-state view.
-- Tasks can be searched by exact date.
-- Tasks can be marked as `Done`.
-- Tasks can be removed from the list.
-- Tasks are sorted by date, then by task ID.
+### Team work
 
-This makes the planner more useful for daily planning, milestone tracking, and short-term scheduling.
+- Register a local username and password, or log in to an existing local account.
+- Create projects and open projects associated with the logged-in username.
+- Add progress messages to a project, view its history, or delete a message.
+- Add collaborator usernames to a project.
 
-### 2. Priority-Based Planning
+The current implementation allows up to 15 projects and 500 progress messages in memory. Collaborators are usernames entered by the project member; the application does not send invitations or share project data over a network.
 
-Each task includes a priority level:
+## Requirements
 
-- High: critical or urgent work
-- Medium: normal priority work
-- Low: optional or flexible tasks
+- A C compiler compatible with the GNU C build used by this project.
+- GNU Make, or MinGW Make on Windows.
+- A terminal or console for the interactive menus.
 
-This priority is used in the calendar display and helps the user quickly identify what needs attention soon.
+The Makefile compiles with `-std=gnu11 -Wall -Wextra`. The HTML exporter uses a GNU-compatible raw-string extension, so a compiler that rejects that extension may need a code change before it can build this project.
 
-### 3. Search by Date
+## Build
 
-The app allows the user to search all tasks scheduled for a specific date.
+Clone the repository and enter its directory:
 
-Example:
-
-```bash
-./todo --date 26-09-2026
+```sh
+git clone https://github.com/mugdha-sarker81/todo-application-in-C_v.2.00.git
+cd todo-application-in-C_v.2.00
 ```
 
-This shows every task scheduled on that date, making it easier to organize the day or review specific deadlines.
+### Linux and macOS
 
-### 4. Home and Dashboard Interface
+With GNU Make and GCC installed:
 
-At startup, choose one of three independent areas:
-
-- Task Manager
-- Habit Tracker
-- Team Work
-
-Each area has its own dashboard, and users can return to the home menu.
-
-The Task Manager dashboard includes:
-
-- Add Task
-- View All Pending Tasks
-- Search Task by Date
-- Mark a Task Done
-- Delete Task
-- Show Calendar
-- Export Tasks to HTML
-- Back to Home
-
-This keeps the application easy to use in a terminal environment while still being feature-rich.
-
-### 5. Daily Habit Tracker
-
-The habit system helps users build good routines and monitor consistency.
-
-Features:
-
-- Add a habit with name and scheduled time (`HH:MM`)
-- View today’s habits
-- Toggle a habit as complete or incomplete
-- Delete habits when no longer needed
-- Track completion logs in `habit_log.txt`
-- Calculate habit completion percentage
-- Measure current streak of successful days
-- Identify neglected habits based on recent performance
-
-Habit logic includes a threshold-based completion rule:
-
-- A day is considered successful when at least 80% of habits are completed.
-- The current streak increases when consecutive days qualify.
-- Performance reporting shows recent completion rates over a configured number of days.
-
-### 6. Streak and Performance Analytics
-
-The app includes a lightweight habit analytics system that helps users monitor consistency.
-
-It tracks:
-
-- Today’s habit completion percentage
-- Current streak count
-- Short-term habit completion rate over recent days
-- Habits marked as neglected if they fall below a threshold
-
-These statistics encourage habit consistency and make the app feel like a daily progress tracker instead of just a task list.
-
-### 7. Team Work
-
-Team Work lets users create or select projects assigned to their username, record progress messages, delete previous messages, and add collaborators. Projects are stored in `team_project_name.txt`; progress history is stored in `commit_msg.txt`.
-
-### 8. Calendar View with Color Coding
-
-The calendar module displays a month view and color-codes days with pending tasks based on task importance.
-
-Color meanings:
-
-- Red: high-priority tasks
-- Yellow: medium-priority tasks
-- Green: low-priority tasks
-- Plain: no pending tasks
-
-This visual planning aid helps users see which days are busier or more urgent at a glance.
-
-### 9. HTML Task Export
-
-The app can generate a simple HTML report from saved tasks.
-
-Command:
-
-```bash
-./todo --report
-```
-
-This creates a file named `report.html` and opens it in the default browser. The exported report includes:
-
-- task list
-- done/undone summary
-- progress chart
-- due date information
-- visual task grouping
-
-This makes it easy to view work summaries outside the terminal and share the report if needed.
-
-### 10. Data Persistence
-
-The program stores user information in local files so data remains available across sessions.
-
-Files created/used:
-
-- `tasks.txt` — stores tasks
-- `habits.txt` — stores habit definitions
-- `habit_log.txt` — stores habit completion records
-- `team_project_name.txt` — stores team projects and collaborator usernames
-- `commit_msg.txt` — stores team progress messages
-- `report.html` — generated export report
-
-This gives the project a realistic personal management tool feel, not just a demo console app.
-
-### 11. Command-Line Convenience
-
-The application supports multiple command-line operations directly from the terminal.
-
-Supported options:
-
-```bash
-./todo --help
-./todo --tut
-./todo --data
-./todo --report
-./todo --clear
-./todo --date DD-MM-YYYY
-./todo --habit
-./todo --team
-```
-
-Examples:
-
-```bash
-./todo --help
-./todo --date 20-10-2026
-./todo --habit
-./todo --team
-./todo --report
-```
-
-This makes the program suitable for quick runs, automation, and efficient daily usage.
-
----
-
-## Detailed Project Structure
-
-```text
-to-do-list-app-in-C/
-├── main.c            # Main application loop and command-line options
-├── tasks.c           # Task management logic
-├── tasks.h           # Task-related structures and function declarations
-├── habits.c          # Habit tracking, logs, streaks, and performance
-├── habits.h          # Habit structures and declarations
-├── calendar.c        # Monthly calendar visualization with color-coding
-├── calendar.h        # Calendar function declarations
-├── export.c          # HTML report generator
-├── export.h          # Export declarations
-├── Makefile          # Build automation
-├── README.md         # Project documentation
-├── tasks.txt         # Saved task records
-├── habits.txt        # Saved habit list
-├── habit_log.txt     # Saved habit completion records
-├── report.html       # Generated HTML report
-├── todo.exe          # Windows compiled binary (if built)
-└── .gitignore        # Git ignore file
-```
-
----
-
-## How the App Works
-
-### Task Data Model
-
-Tasks are stored using a structure similar to:
-
-```c
-struct Task {
-    int id;
-    char date[20];
-    char title[100];
-    char priority[10];
-    char status[15];
-};
-```
-
-This stores:
-
-- a unique task ID
-- due date
-- task description/title
-- priority
-- completion state
-
-### Habit Data Model
-
-Habits are tracked using a structured record containing:
-
-- habit ID
-- habit name
-- scheduled time
-- daily completion log entries
-
-Each log entry tracks:
-
-- date
-- habit ID
-- completion state (`0` or `1`)
-
-### Input Validation
-
-The app validates key inputs before saving records:
-
-- date format must be `DD-MM-YYYY`
-- month must be between `1` and `12`
-- day must be valid for the month
-- priority must be one of `High`, `Medium`, or `Low`
-- habit time must be in `HH:MM` format
-
-This reduces invalid data and prevents broken scheduling.
-
-### File Persistence Logic
-
-The project explicitly reads and writes from text files with `fopen()`, `fscanf()`, `fprintf()`, and related C file functions.
-
-This means:
-
-- tasks are not lost when the application exits
-- habit records remain available
-- progress continues from a previous session
-- report generation works using stored data
-
----
-
-## Build and Run Instructions
-
-### Linux/macOS
-
-```bash
-git clone https://github.com/mugdha-sarker81/to-do-list-app-in-C.git
-cd to-do-list-app-in-C
+```sh
 make
-./todo
 ```
 
-Or directly:
+The executable is named `todo`.
 
-```bash
-gcc main.c tasks.c habits.c calendar.c export.c -o todo
-./todo
-```
+### Windows with MinGW
 
-### Windows with PowerShell
+Open a MinGW or Git Bash terminal in the project directory and run:
 
-If `make` is available:
-
-```powershell
+```sh
 mingw32-make
-mingw32-make run
 ```
 
-If not, compile directly:
+The executable is named `todo.exe`.
+
+If the compiler reports that it cannot write the executable, close any running copy of the app and retry the build.
+
+### Build directly with GCC
+
+The same source files can be compiled without Make:
+
+```sh
+gcc -std=gnu11 -Wall -Wextra main.c tasks.c habits.c calendar.c export.c team.c team_auth.c -o todo
+```
+
+On Windows, use `-o todo.exe` instead:
 
 ```powershell
-gcc main.c tasks.c habits.c calendar.c export.c -o todo.exe
+gcc -std=gnu11 -Wall -Wextra main.c tasks.c habits.c calendar.c export.c team.c team_auth.c -o todo.exe
+```
+
+## Run
+
+Start the interactive home menu:
+
+```sh
+./todo
+```
+
+On Windows PowerShell:
+
+```powershell
 .\todo.exe
 ```
 
----
+Or run it through Make:
 
-## Command-Line Options
-
-```bash
-./todo --help
-./todo --tut
-./todo --data
-./todo --report
-./todo --clear
-./todo --date DD-MM-YYYY
-./todo --habit
+```sh
+make run
 ```
 
-### Option Details
+On Windows:
 
-- `--help` : show available commands
-- `--tut` : print a quick usage tutorial
-- `--data` : show where the saved data is stored
-- `--report` : generate and open the HTML task report
-- `--clear` : delete saved task and habit data
-- `--date DD-MM-YYYY` : view tasks for a specific day
-- `--habit` : jump directly into the habits dashboard
-
----
-
-## Example User Flow
-
-### Add a task
-
-1. Start the app
-2. Select `1` from the menu
-3. Enter the date in `DD-MM-YYYY`
-4. Enter the task title
-5. Choose a priority
-6. The task is saved to `tasks.txt`
-
-### Mark a task as done
-
-1. View pending tasks
-2. Choose the task to complete
-3. Enter the task ID
-4. The task status changes to `Done`
-
-### Search tasks by date
-
-```bash
-./todo --date 25-10-2026
+```powershell
+mingw32-make run
 ```
 
-### Update habit progress
+The home menu opens the Task Manager, Habit Tracker, or Team Work dashboard. Select the exit option to close the application.
 
-1. Open the habit dashboard
-2. Add a habit
-3. Mark the habit complete for today
-4. View the performance and streak stats
+> Run the program from the directory where you want its text data files to live. File paths are relative to the current working directory, not automatically to the executable's location.
 
-### Generate a report
+## Using the application
 
-```bash
-./todo --report
-```
+### Tasks
 
-This generates a visual HTML page with task progress information.
+1. Open **Task Manager** from the home menu.
+2. Select **Add Task**.
+3. Enter a date as `DD-MM-YYYY`, a title, and one of `High`, `Medium`, or `Low`.
+4. Use **View All Pending Tasks** to find task IDs.
+5. Use **Search Task by Date** to find all tasks on a specific date.
+6. Use **Mark a Task done** or **Delete a Task** and enter the task ID.
+7. Select **Show Calendar** and enter the month and year to see pending task dates.
+8. Select **Export to HTML report** to create a report from saved task data.
 
----
+Completed tasks are hidden from the pending-task list but remain in `tasks.txt` and can appear in date searches and HTML reports.
 
-## Data File Format
+### Habits
 
-### tasks.txt
+1. Open **Habit Tracker**.
+2. Select **Add Habit**, then enter its name and a time such as `07:30`.
+3. Select **Show Today's Habits** to see the current completion state and habit IDs.
+4. Select **Mark Habit Done** and enter a habit ID to toggle its completion for today.
+5. Select **Show Performance** to see seven-day rates and neglected habits.
 
-Example:
+Marking a habit a second time on the same day toggles it back to incomplete. Habit records and daily completion history are stored separately, so deleting a habit does not automatically erase its old log entries.
+
+### Team work
+
+1. Open **Team Work** from the home menu, or launch with `--team`.
+2. Choose **Register** to create a local account, or **Login** to use an existing account.
+3. After successful registration or login, choose an existing project or choose `0` to create one.
+4. In a project, add a progress message, delete a previous message, add a collaborator, switch projects, or return to the home menu.
+
+Project membership is matched against the username exactly. Adding a collaborator records the username in the project; it does not create the collaborator's account.
+
+### HTML report
+
+The report command reads `tasks.txt`, writes `report.html` in the current working directory, and asks the operating system to open the file in a browser. The report includes task titles, due dates, completion counts, and a progress graphic. A report cannot be generated when there is no readable task file or when the task file is empty.
+
+The report is generated output. It is not required to build or run the application and can be regenerated with `--report` or the task dashboard.
+
+## Command-line reference
+
+Use the executable name appropriate for the operating system:
+
+| Command | Description |
+| --- | --- |
+| `todo --help` or `todo -h` | Show the available command-line options. |
+| `todo --tut` | Print the built-in quick tutorial. |
+| `todo --data` | Print the task and habit data-file names. |
+| `todo --date DD-MM-YYYY` | Print tasks scheduled for the specified date. |
+| `todo --habit` | Open the Habit Tracker directly. |
+| `todo --team` | Open the Team Work dashboard directly. |
+| `todo --report` | Generate and open the HTML task report. |
+| `todo --clear` | Remove `tasks.txt`, `habits.txt`, and `habit_log.txt`. |
+
+For Linux and macOS, prefix the command with `./`, for example `./todo --help`. In PowerShell, use `.\todo.exe --help`.
+
+`--clear` does not remove Team Work files. It also does not ask for confirmation, so make backups before using it if you want to keep task or habit data.
+
+## Data storage and formats
+
+The app uses plain-text files in its current working directory. Files are created or updated when the corresponding feature saves data. Back up these files before deleting, editing, or moving them.
+
+| File | Contents | Record format |
+| --- | --- | --- |
+| `tasks.txt` | Tasks and their status | `id|DD-MM-YYYY|title|priority|status` |
+| `habits.txt` | Habit definitions | `id|name|HH:MM` |
+| `habit_log.txt` | Completion state for a habit on a date | `YYYY-MM-DD|habit_id|completed` |
+| `team_users.txt` | Local team accounts | `username|password` |
+| `team_project_name.txt` | Project IDs, names, and comma-separated members | `project_id|project_name|member1,member2` |
+| `commit_msg.txt` | Team project progress entries | `project_id|message|username|HH:MM|DD-MM-YYYY` |
+| `report.html` | Generated task report | HTML document |
+
+Example records below show the format only; replace the values with your own data:
 
 ```text
-1|15-10-2026|Finish assignment|High|Pending
-2|16-10-2026|Buy groceries|Medium|Done
-3|18-10-2026|Read chapter 5|Low|Pending
+# tasks.txt
+1|24-10-2026|Finish project README|High|Pending
+
+# habits.txt
+1|Read for 20 minutes|07:30
+
+# habit_log.txt
+2026-10-24|1|1
+
+# team_project_name.txt
+p1|Website redesign|alice,bob
+
+# commit_msg.txt
+p1|Drafted the home page|alice|09:45|24-10-2026
 ```
 
-Format:
+The `|` character separates fields in these formats. Avoid using it in values that are saved in these files. Team account passwords are saved as plain text, not encrypted or hashed.
+
+The current `.gitignore` ignores untracked text files and generated reports by default. This helps avoid adding local data and account files by mistake. Files already tracked by Git remain tracked until you explicitly remove them from the index.
+
+## Project layout
 
 ```text
-id|date|title|priority|status
+.
+├── main.c          # Program entry point, home menu, CLI options, task dashboard
+├── tasks.c         # Task records, operations, sorting, and persistence
+├── tasks.h         # Task structure and declarations
+├── habits.c        # Habit tracking, completion logs, streaks, performance
+├── habits.h        # Habit structures, limits, and declarations
+├── calendar.c      # Monthly calendar and pending-task priority colors
+├── calendar.h      # Calendar declaration
+├── export.c        # HTML task report generation
+├── export.h        # Report generator declaration
+├── team.c          # Projects, collaborators, and progress history
+├── team.h          # Team dashboard declaration
+├── team_auth.c     # Local registration and login
+├── team_auth.h     # Authentication declarations
+├── Makefile        # GNU Make build rules
+├── README.md       # Project documentation
+└── .gitignore      # Build and local-data ignore rules
 ```
 
-### habits.txt
+Object files, executables, runtime text data, and the generated HTML report may appear after building or using the application; they are not source files.
 
-Example:
+## Implementation notes and limits
 
-```text
-1|Morning Run|06:30
-2|Read 20 pages|21:00
-```
+- **Language and build:** C compiled with GCC-compatible GNU C mode (`gnu11`).
+- **Task storage:** Tasks are loaded into a dynamically allocated array and sorted by due date and then task ID when saved.
+- **Habit storage:** Habit definitions and daily completion records use separate arrays and files.
+- **Calendar:** The calendar displays pending tasks only; if multiple pending tasks fall on a date, the date is shown using the highest priority found.
+- **Team work:** Projects and progress messages are local records. There is no remote server, multi-device synchronization, or access control between operating-system users who can read the data files.
+- **Input formats:** Task and habit data are delimiter-separated text rather than a database. Editing them manually can make records unreadable if separators or malformed values are introduced.
+- **Screen clearing:** The current implementation uses the Windows `cls` command, so screen-clearing behavior may need adjustment on non-Windows terminals.
 
-Format:
+## Troubleshooting
 
-```text
-id|habit_name|time
-```
+### `mingw32-make` is not recognized
 
-### habit_log.txt
+Install a MinGW GCC toolchain that includes MinGW Make, or compile directly with the GCC command in [Build](#build). Ensure `gcc` is available in the terminal's `PATH`.
 
-Example:
+### The linker cannot write `todo.exe`
 
-```text
-2026-10-10|1|1
-2026-10-10|2|0
-```
+Close any running copy of the application and retry. Windows may lock an executable while it is running.
 
-Format:
+### The app says it cannot find saved data
 
-```text
-YYYY-MM-DD|habitId|completed
-```
+Run the app from the directory containing the data files, or create new records so the app can save files there. Data paths are relative to the terminal's current directory.
 
----
+### Team login fails
 
-## Feature Highlights in Summary
+Register the username first. Accounts are local to the `team_users.txt` file in the current working directory. Check that the app is being launched from the same data directory in which the account was created.
 
-This project is more than a simple to-do list. It includes:
+### A project is missing after login
 
-- Full task lifecycle management
-- Priority-based organization
-- Date search and scheduling support
-- Visual calendar planning
-- Daily habit tracking
-- Streak and performance monitoring
-- HTML report generation
-- Persistent storage
-- Multi-file modular C architecture
-- Command-line support for quick usage
+The project is listed only for usernames recorded in that project's member list. Check `team_project_name.txt` and confirm the username matches exactly.
 
----
+### The HTML report does not open
 
-## Why This Project Is Useful
+Check that `tasks.txt` exists and contains task records. The program creates `report.html` in the current directory; if the automatic browser launch fails, open that file manually.
 
-This project demonstrates several important C programming concepts in a practical way:
+## Privacy and security
 
-- dynamic memory allocation
-- file I/O
-- string handling
-- data structures
-- sorting and searching
-- modular code design
-- menu-driven application flow
-- user input validation
-- data persistence and analytics
+- Team account passwords are stored in plain text in `team_users.txt`. Do not use a password that protects another account or service.
+- These local accounts are for basic application flow, not secure authentication.
+- Anyone who can read the data directory can read or modify the app's saved data.
+- Avoid committing real task, habit, team, or account files to a public repository.
+- The `--clear` option permanently removes the task and habit files listed in the command reference; back them up first if needed.
 
-It is suitable for:
+## License
 
-- academic C assignments
-- personal productivity tools
-- beginner-to-intermediate software engineering practice
-- learning how to build menu-driven terminal applications
-
----
-
-## Notes
-
-- The app is optimized for terminal usage and works best in a console environment.
-- Some behavior, such as clearing the screen, uses system commands and may vary slightly across operating systems.
-- The generated HTML report is saved in the same directory as the application.
-- Use `--clear` carefully because it removes saved progress files.
-
----
-
-## Quick Start
-
-```bash
-make
-./todo
-```
-
-Then choose from the menu and begin managing tasks and habits immediately.
-
----
-
-## License and Usage
-
-This project is intended for educational and personal use. It can be modified and extended according to your needs.
+No license file is currently included. Ask the repository owner before redistributing this project or incorporating it into another project.
