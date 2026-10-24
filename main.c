@@ -5,10 +5,12 @@
 #include "habits.h"
 #include "calendar.h"
 #include "export.h"
+#include "team.h"
 
 void clearScreen();
 void clearInputBuffer();
 void dashboard();
+void home();
 void printTutorial();
 
 int main(int argc, char *argv[]) {
@@ -17,7 +19,7 @@ int main(int argc, char *argv[]) {
         if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
 
             printf("\n============================================================\n");
-            printf("              TASK MANAGER & HABIT TRACKER\n");
+            printf("       TASK MANAGER, HABIT TRACKER & TEAM WORK\n");
             printf("============================================================\n\n");
             printf("Usage:  ");
             printf("  ./todo [option]\n\n");
@@ -27,6 +29,7 @@ int main(int argc, char *argv[]) {
             printf("  --clear                 Clear all saved tasks and habits\n");
             printf("  --date DD-MM-YYYY       View tasks for a specific date\n");
             printf("  --habit                 Open the Daily Habits dashboard\n");
+            printf("  --team                  Open the Team Work dashboard\n");
             printf("  --report                Generate and open the HTML task report\n");
             printf("  --data                  Show where your data is saved\n");
             printf("  --tut                   Open the quick tutorial\n\n");
@@ -107,11 +110,13 @@ int main(int argc, char *argv[]) {
             return 0;
         }
         else if (strcmp(argv[1], "--habit") == 0) {
-            loadTasks();
             loadHabits();
             loadLogs();
             habitboard();
-            free(tasks);
+            return 0;
+        }
+        else if (strcmp(argv[1], "--team") == 0) {
+            teamDashboard();
             return 0;
         }
         else {
@@ -124,19 +129,51 @@ int main(int argc, char *argv[]) {
     loadTasks();
     loadHabits();
     loadLogs();
-    dashboard();
+    home();
 
     free(tasks);
     return 0;
 }
 
 
+void home() {
+    int choice;
+
+    while (1) {
+        clearScreen();
+        printf("\n=====================================\n");
+        printf("          PRODUCTIVITY HOME\n");
+        printf("=====================================\n");
+        printf("1. Task Manager\n");
+        printf("2. Habit Tracker\n");
+        printf("3. Team Work\n");
+        printf("4. Exit\n");
+        printf("=====================================\n");
+        printf("Choose a feature: ");
+
+        if (scanf("%d", &choice) != 1) {
+            printf("Invalid input! Please enter a number.\n");
+            clearInputBuffer();
+            continue;
+        }
+
+        switch (choice) {
+            case 1: dashboard(); break;
+            case 2: habitboard(); break;
+            case 3:
+                clearInputBuffer();
+                teamDashboard();
+                break;
+            case 4: return;
+            default: printf("Invalid choice! Please try again.\n");
+        }
+    }
+}
+
 void dashboard() {
     clearScreen();
     int choice;
     while (1){
-        printf("\n=====================================\n");
-        printf("Today: %d%%   Streak: %d day(s)\n", todayPerformance(), currentStreak());
         printf("=====================================\n");
         printf("            TASK MANAGER\n");
         printf("=====================================\n");
@@ -145,10 +182,9 @@ void dashboard() {
         printf("3. Search Task by Date\n");
         printf("4. Mark a Task done\n");
         printf("5. Delete Task\n");
-        printf("6. Daily Habits dashboard\n");
-        printf("7. Show Calendar\n");
-        printf("8. export to HTML report\n");
-        printf("9. Exit\n");
+        printf("6. Show Calendar\n");
+        printf("7. Export to HTML report\n");
+        printf("8. Back to Home\n");
         printf("=====================================\n");
         printf("Enter your choice: ");
 
@@ -162,30 +198,9 @@ void dashboard() {
             case 1: addTask(); break;
             case 2: viewTasks(); break;
             case 3: searchByDate(); break;
-            case 4: {
-                viewTasks();
-                completeTask();
-                printf("\n=========back to dashboard (press 5): ");
-                while (1) {
-                    int ch; scanf("%d", &ch);
-                    if (ch == 5) { dashboard(); break; }
-                    else printf("\nInvalid choice! Please press '5' again: ");
-                }
-                break;
-            }
-            case 5: {
-                viewTasks();
-                deleteTask();
-                printf("\n=========back to dashboard (press 5): ");
-                while (1) {
-                    int ch; scanf("%d", &ch);
-                    if (ch == 5) { dashboard(); break; }
-                    else printf("\nInvalid choice! Please press '5' again: ");
-                }
-                break;
-            }
-            case 6: habitboard(); break;
-            case 7: {
+            case 4: viewTasks(); completeTask(); break;
+            case 5: viewTasks(); deleteTask(); break;
+            case 6: {
                 int year, month;
                 printf("Enter month and year (e.g. 9 2026): ");
                 scanf("%d %d", &month, &year);
@@ -202,7 +217,7 @@ void dashboard() {
                 }
                 break;
             }
-            case 8: {
+            case 7: {
                 if (exportTasksToHTML() != 0) {
                     fprintf(stderr, "Could not generate the task report.\n");
                     break;
@@ -225,10 +240,8 @@ void dashboard() {
                 printf("Report created and opened: report.html\n");
                 break;
             }
-            case 9:
-                printf("\nThank you for using Task Manager!\n");
-                free(tasks);
-                exit(0);
+            case 8:
+                return;
             default:
                 printf("Invalid choice! Please try again.\n");
         }
@@ -247,13 +260,15 @@ void clearScreen(){
 void printTutorial() {
     printf("\n");
     printf("============================================================\n"); 
-    printf(" TASK MANAGER & HABIT TRACKER - GUIDE\n"); 
+    printf(" TASK MANAGER, HABITS & TEAM WORK - GUIDE\n"); 
     printf("============================================================\n\n"); 
-    printf("Welcome! \n"); 
-    printf("This app helps you organize your daily tasks and habits.\n"); 
-    printf("Choose an option from the menu and follow the instructions.\n\n"); 
+    printf("Welcome! Choose an area from the home menu:\n\n");
+    printf(" [1] Task Manager - create, find, complete, and delete tasks.\n");
+    printf(" [2] Habit Tracker - manage habits and review your streak.\n");
+    printf(" [3] Team Work - follow project progress and manage collaborators.\n");
+    printf(" [4] Exit\n\n");
     printf("------------------------------------------------------------\n"); 
-    printf("  TASKS\n"); 
+    printf("  TASK MANAGER\n"); 
     printf("------------------------------------------------------------\n"); 
     printf(" [1] Add Task\n"); 
     printf(" \tCreate a new task with a date, title, and priority.\n"); 
@@ -265,18 +280,11 @@ void printTutorial() {
     printf(" \tFinished something? Mark it as DONE using its ID.\n"); 
     printf(" [5] Delete a Task\n"); 
     printf(" \tRemove a task you no longer need using its ID.\n"); 
-    printf("------------------------------------------------------------\n"); 
-    printf("  HABITS & PLANNING\n"); 
-    printf("------------------------------------------------------------\n"); 
-    printf(" [6] Habit Dashboard\n"); 
-    printf(" \tAdd habits and track how well you are doing today.\n"); 
-    printf(" [7] Calendar\n"); 
+    printf(" [6] Show Calendar\n"); 
     printf(" \tPick a month and year to see your task calendar.\n"); 
-    printf(" [8] Export Report\n"); 
+    printf(" [7] Export Report\n"); 
     printf(" \tCreate a report.html file to view your tasks in a browser.\n"); 
-    printf(" [9] Exit\n"); 
-    printf(" \tSave your progress and close the application.\n\n");
-    printf(" Tip: Start with [1] Add Task and create your first task!\n"); 
+    printf(" [8] Back to Home\n\n");
+    printf(" Tip: Choose a different area from the home menu at any time.\n"); 
     printf("============================================================\n");
-    return;
 }

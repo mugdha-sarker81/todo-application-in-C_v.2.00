@@ -276,7 +276,7 @@ void habitboard(){
         printf("3. Mark Habit Done\n");
         printf("4. Delete Habit\n");
         printf("5. Show Performance\n");
-        printf("6. Back to Main Menu\n");
+        printf("6. Back to Home page\n");
         printf("----------------------------\n");
         printf("Choice: ");
 
@@ -303,7 +303,7 @@ void habitboard(){
                 else clearInputBuffer();
                 break;
             case 5: showPerformance(); break;
-            case 6: dashboard(); break;
+            case 6: home(); break;
             default: printf("Invalid choice. Try again\n");
         }
     }

@@ -1,6 +1,5 @@
 1|28-09-2026|Review monthly budget|Medium|Done
 2|01-10-2026|Submit apartment maintenance request|Low|Done
-3|03-10-2026|Finish online course module|High|Pending
 4|05-10-2026|Schedule annual dental checkup|Medium|Done
 5|08-10-2026|Organize project research notes|Low|Pending
 6|10-10-2026|Prepare weekly meal plan|Medium|Done

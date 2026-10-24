@@ -1,6 +1,6 @@
-﻿# Task Manager & Daily Habit Tracker
+# Task Manager, Habit Tracker & Team Work
 
-A feature-rich C application for managing daily tasks, tracking habits, reviewing progress, and planning work visually. It combines task organization, priority-based scheduling, habit streak analytics, and report generation into a single command-line productivity dashboard.
+A feature-rich C application for managing daily tasks, tracking habits, coordinating team projects, reviewing progress, and planning work visually. Its home menu keeps task management, habit tracking, and team work in separate dashboards.
 
 This project is designed as a practical C programming exercise and also works as a real personal productivity tool for daily planning.
 
@@ -16,6 +16,7 @@ The application provides:
 - Marking tasks as completed
 - Task deletion
 - Habit tracking with daily completion logs
+- Team project progress messages and collaborators
 - Streak calculation and performance statistics
 - Calendar visualization with color-coded priority levels
 - HTML export for quick reporting and sharing
@@ -69,19 +70,26 @@ Example:
 
 This shows every task scheduled on that date, making it easier to organize the day or review specific deadlines.
 
-### 4. Dashboard Interface
+### 4. Home and Dashboard Interface
 
-The app uses a menu-driven dashboard with numbered options. The interface includes:
+At startup, choose one of three independent areas:
+
+- Task Manager
+- Habit Tracker
+- Team Work
+
+Each area has its own dashboard, and users can return to the home menu.
+
+The Task Manager dashboard includes:
 
 - Add Task
 - View All Pending Tasks
 - Search Task by Date
 - Mark a Task Done
 - Delete Task
-- Daily Habits Dashboard
 - Show Calendar
 - Export Tasks to HTML
-- Exit
+- Back to Home
 
 This keeps the application easy to use in a terminal environment while still being feature-rich.
 
@@ -119,7 +127,11 @@ It tracks:
 
 These statistics encourage habit consistency and make the app feel like a daily progress tracker instead of just a task list.
 
-### 7. Calendar View with Color Coding
+### 7. Team Work
+
+Team Work lets users create or select projects assigned to their username, record progress messages, delete previous messages, and add collaborators. Projects are stored in `team_project_name.txt`; progress history is stored in `commit_msg.txt`.
+
+### 8. Calendar View with Color Coding
 
 The calendar module displays a month view and color-codes days with pending tasks based on task importance.
 
@@ -132,7 +144,7 @@ Color meanings:
 
 This visual planning aid helps users see which days are busier or more urgent at a glance.
 
-### 8. HTML Task Export
+### 9. HTML Task Export
 
 The app can generate a simple HTML report from saved tasks.
 
@@ -152,7 +164,7 @@ This creates a file named `report.html` and opens it in the default browser. The
 
 This makes it easy to view work summaries outside the terminal and share the report if needed.
 
-### 9. Data Persistence
+### 10. Data Persistence
 
 The program stores user information in local files so data remains available across sessions.
 
@@ -161,11 +173,13 @@ Files created/used:
 - `tasks.txt` — stores tasks
 - `habits.txt` — stores habit definitions
 - `habit_log.txt` — stores habit completion records
+- `team_project_name.txt` — stores team projects and collaborator usernames
+- `commit_msg.txt` — stores team progress messages
 - `report.html` — generated export report
 
 This gives the project a realistic personal management tool feel, not just a demo console app.
 
-### 10. Command-Line Convenience
+### 11. Command-Line Convenience
 
 The application supports multiple command-line operations directly from the terminal.
 
@@ -179,6 +193,7 @@ Supported options:
 ./todo --clear
 ./todo --date DD-MM-YYYY
 ./todo --habit
+./todo --team
 ```
 
 Examples:
@@ -187,6 +202,7 @@ Examples:
 ./todo --help
 ./todo --date 20-10-2026
 ./todo --habit
+./todo --team
 ./todo --report
 ```
 

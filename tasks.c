@@ -243,7 +243,7 @@ void askuser(){
             case 1: addTask(); break;
             case 2: completeTask(); break;
             case 3: deleteTask(); break;
-            case 4: dashboard(); break;
+            case 4: return;
             default:
                 printf("Invalid choice! Please try again.\n");
         }

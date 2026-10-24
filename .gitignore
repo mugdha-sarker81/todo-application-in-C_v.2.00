@@ -11,10 +11,8 @@
 /todo
 /output/
 
-# Generated application data and reports
-tasks.txt
-habits.txt
-habit_log.txt
+# Text files and generated reports
+*.txt
 /report.html
 
 # Keep the fictional demo dataset versioned while ignoring runtime data
