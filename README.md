@@ -7,6 +7,7 @@ A terminal-based productivity application written in C. Manage dated tasks, trac
 ## Contents
 
 - [Features](#features)
+- [What the interface looks like](#what-the-interface-looks-like)
 - [Requirements](#requirements)
 - [Build](#build)
 - [Run](#run)
@@ -15,6 +16,9 @@ A terminal-based productivity application written in C. Manage dated tasks, trac
 - [Data storage and formats](#data-storage-and-formats)
 - [Project layout](#project-layout)
 - [Implementation notes and limits](#implementation-notes-and-limits)
+- [Algorithms and techniques](#algorithms-and-techniques)
+- [Team contributions](#team-contributions)
+- [Known limitations](#known-limitations)
 - [Troubleshooting](#troubleshooting)
 - [Privacy and security](#privacy-and-security)
 - [License](#license)
@@ -27,7 +31,7 @@ A terminal-based productivity application written in C. Manage dated tasks, trac
 - Assign each task an automatically generated numeric ID and the initial `Pending` status.
 - View pending tasks, search tasks by date, mark a task as done, or delete a task.
 - Keep tasks ordered by date and then by ID when the application saves them.
-- View a month at a glance, with pending task dates colored by their highest priority:
+- View a month at a glance, with pending task dates colored by priority:
   - **Red:** High
   - **Yellow:** Medium
   - **Green:** Low
@@ -53,6 +57,96 @@ A day counts toward the current streak when at least 80% of the current habits a
 
 The current implementation allows up to 15 projects and 500 progress messages in memory. Collaborators are usernames entered by the project member; the application does not send invitations or share project data over a network.
 
+## What the interface looks like
+
+The application uses an interactive, text-based terminal interface rather than a graphical window. Choose a section from the home menu, then follow the numbered prompts. Calendar task dates use terminal colors to indicate priority.
+
+### Home menu
+
+```text
+=====================================
+          PRODUCTIVITY HOME
+=====================================
+1. Task Manager
+2. Habit Tracker
+3. Team Work
+4. Exit
+=====================================
+Choose a feature:
+```
+
+### Task manager
+
+```text
+=====================================
+            TASK MANAGER
+=====================================
+1. Add Task
+2. View All pending Tasks
+3. Search Task by Date
+4. Mark a Task done
+5. Delete Task
+6. Show Calendar
+7. Export to HTML report
+8. Back to Home
+=====================================
+Enter your choice:
+
+1 | 28-10-2026 | Finish project README | Priority: High | Status: Pending
+```
+
+### Habit tracker
+
+```text
+============================
+      DAILY HABITS
+============================
+Today: 50%   Streak: 0 day(s)
+----------------------------
+1. Show Today's Habits
+2. Add Habit
+3. Mark Habit Done
+4. Delete Habit
+5. Show Performance
+6. Back to Home page
+----------------------------
+Choice:
+
+===== 2026-10-26 =====
+1. [X] 07:30 - Morning exercise
+2. [ ] 20:00 - Read
+====================
+```
+
+### Team work
+
+```text
+Team Project Progress Tracker
+1. Login
+2. Register
+0. Back
+Choose:
+
+Projects you are working on:
+1. README refresh
+0. Create new project
+Choose a project:
+
+Commit history for README refresh:
+1. Added the feature overview
+   By: alex   Date: 26-10-2026  Time: 09:45
+
+1. Add new progress message
+2. Delete a previous message
+3. Add collaborator
+4. Switch project
+5. Back to Home
+
+Choose option:
+```
+
+The sample names, tasks, and progress messages above are illustrative; your screens show the records saved in your current working directory.
+
 ## Requirements
 
 - A C compiler compatible with the GNU C build used by this project.
@@ -61,13 +155,15 @@ The current implementation allows up to 15 projects and 500 progress messages in
 
 The Makefile compiles with `-std=gnu11 -Wall -Wextra`. The HTML exporter uses a GNU-compatible raw-string extension, so a compiler that rejects that extension may need a code change before it can build this project.
 
+To remove the executable and object files before rebuilding, run `make clean` (or `mingw32-make clean` on Windows). The repository does not currently include an automated test target.
+
 ## Build
 
 Clone the repository and enter its directory:
 
 ```sh
-git clone https://github.com/mugdha-sarker81/todo-application-in-C_v.2.00.git
-cd todo-application-in-C_v.2.00
+git clone https://github.com/mugdha-sarker81/to-do-list-app-in-C.git
+cd to-do-list-app-in-C
 ```
 
 ### Linux and macOS
@@ -261,10 +357,55 @@ Object files, executables, runtime text data, and the generated HTML report may 
 - **Language and build:** C compiled with GCC-compatible GNU C mode (`gnu11`).
 - **Task storage:** Tasks are loaded into a dynamically allocated array and sorted by due date and then task ID when saved.
 - **Habit storage:** Habit definitions and daily completion records use separate arrays and files.
-- **Calendar:** The calendar displays pending tasks only; if multiple pending tasks fall on a date, the date is shown using the highest priority found.
+- **Calendar:** The calendar reads pending-task dates from `tasks.txt` and uses priority colors.
 - **Team work:** Projects and progress messages are local records. There is no remote server, multi-device synchronization, or access control between operating-system users who can read the data files.
 - **Input formats:** Task and habit data are delimiter-separated text rather than a database. Editing them manually can make records unreadable if separators or malformed values are introduced.
 - **Screen clearing:** The current implementation uses the Windows `cls` command, so screen-clearing behavior may need adjustment on non-Windows terminals.
+
+## Algorithms and techniques
+
+The project applies core data-structure and algorithm concepts to task, calendar, habit, and team workflows. Let `n` be the number of tasks, `h` the number of habits (at most 10), `L` the number of habit-log entries, `p` the number of projects, `m` the number of members checked, and `S` the current streak length.
+
+| Algorithm or technique | How it is used | Time complexity |
+| --- | --- | --- |
+| Dynamic array doubling | The task array starts with 20 slots and doubles with `realloc` when full. | Amortized O(1) per task addition |
+| Date-key conversion | Converts `DD-MM-YYYY` to `YYYYMMDD` numeric form for chronological comparisons. | O(1) |
+| `qsort` with a comparator | Orders tasks by date key, then task ID, when loading and saving. | O(n log n) |
+| Linear search | Finds tasks by ID or date, habits by ID, and a habit's log entry by date. | O(n), O(h), or O(L) |
+| Delete by shifting | Removes an array entry by moving later entries one position toward the start. | O(n) |
+| Input validation | Checks date/time formats and ranges and checks task priorities before accepting input. | O(1) per value |
+| Binary search | Looks up a calendar date in the ordered pending-task date array. | O(log n) per date |
+| Leap-year calculation | Applies the Gregorian rule: divisible by 4, except centuries not divisible by 400. | O(1) |
+| Day-of-week calculation | Counts days from year 1, adds preceding month days and leap-day adjustment, then uses modulo 7. | O(1) |
+| Bubble sort | Keeps habits ordered by their zero-padded `HH:MM` time strings. | O(h²) |
+| Completion percentage | Calculates completed habits as an integer percentage of current habits. | O(h · L) with log lookups |
+| Streak counting | Walks backward from today while each day meets the 80% completion threshold. | O(S · h · L) |
+| Seven-day completion rate | Counts each habit's completed days in the trailing seven-day window and flags rates below 40%. | O(h · 7 · L) |
+| Membership check and filtered index map | Splits project member lists to find matching projects; helper index arrays map visible menu choices back to stored records. | O(p · m) |
+
+Calendar lookup assumes pending-task dates are ordered. The current implementation has edge cases for dates without pending tasks and duplicate dates; see [Known limitations](#known-limitations).
+
+## Team contributions
+
+The project report describes the work as follows:
+
+| Contributor | Contributions |
+| --- | --- |
+| **Arko Chakrovortty (2507022)** | Designed and implemented the calendar module (`calendar.c`, `calendar.h`) and HTML report export (`export.c`, `export.h`); contributed to sorting and searching logic, date-based organization, calendar calculations, and report processing. |
+| **Mugdha Sarker Anik (2507030)** | Led application architecture and module organization; implemented the habit tracker (`habits.c`), team management and authentication (`team.c`, `team_auth.c`); coordinated data-file formats, the Makefile, documentation, and repository cleanup. |
+| **Tauhid Khan (2507002)** | Contributed to task management (`tasks.c`) and the main program (`main.c`); explored persistent file storage and dynamic memory allocation. |
+
+## Known limitations
+
+These are current implementation limitations, not supported workflows:
+
+- **Calendar edge cases:** The calendar does not safely handle a missing `tasks.txt` file or a displayed date with no pending task. It may access an invalid entry in either case. When several pending tasks share a date, the color may not reflect the highest priority.
+- **Date validation:** Task dates are checked for their `DD-MM-YYYY` shape and broad numeric ranges, not for the number of days in each month or leap years.
+- **Task title delimiter:** A task title containing `|` can break the pipe-separated record when it is saved and loaded again. Avoid that character in task titles.
+- **HTML report:** The report generator uses a fixed 1,000-task buffer without checking its capacity, and its displayed total-progress percentage may be incorrect. Do not rely on that percentage for larger task lists.
+- **Habit streaks and menus:** A streak counts only when today's completion reaches the 80% threshold; past qualifying days alone do not keep a streak active. Some menu navigation paths call menus recursively.
+- **Fixed capacities:** The application stores at most 10 habits, 5,000 habit log entries, 15 projects, and 500 progress messages in memory.
+- **Local credentials:** Team passwords are stored as plain text. These accounts are for basic local project flow, not secure authentication.
 
 ## Troubleshooting
 
